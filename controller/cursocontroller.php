@@ -6,14 +6,16 @@ class cursoController {
 
     public function listado() {
         $this->view = 'curso/listado';
-        $cursos = Curso::listar();
+        $cursoModel = new Curso();
+        $cursos = $cursoModel->listar();
         return ['cursos' => $cursos];
     }
 
     public function detalle() {
         $this->view = 'curso/detalle';
         $id = $_GET['id'];
-        $curso = Curso::detalle($id);
+        $cursoModel = new Curso();
+        $curso = $cursoModel->detalle($id);
         return ['curso' => $curso];
     }
 }

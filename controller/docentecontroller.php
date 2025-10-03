@@ -6,15 +6,9 @@ class docenteController {
 
     public function listado() {
         $this->view = 'docente/listado';
-        $docentes = Docente::listar();
+        $docenteModel = new Docente();
+        $docentes = $docenteModel->listar(); // ← si listar() no es static
         return ['docentes' => $docentes];
-    }
-
-    public function verPerfil() {
-        $this->view = 'docente/perfil';
-        $id = $_GET['id'];
-        $docente = Docente::buscarPorId($id);
-        return ['docente' => $docente];
     }
 }
 ?>

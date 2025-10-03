@@ -6,15 +6,9 @@ class materiaController {
 
     public function listado() {
         $this->view = 'materia/listado';
-        $materias = Materia::listar();
+        $materiaModel = new Materia();
+        $materias = $materiaModel->listar();
         return ['materias' => $materias];
     }
-    
-    public function verPorCurso() {
-    $this->view = 'materia/porCurso';
-    $cursoId = $_GET['curso_id'];
-    $materias = Materia::listarPorCurso($cursoId);
-    return ['materias' => $materias];
-}
 }
 ?>

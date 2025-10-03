@@ -1,13 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 4.8.4
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 26-09-2025 a las 23:52:26
--- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.0.30
+-- Tiempo de generación: 08-02-2019 a las 14:23:00
+-- Versión del servidor: 10.1.37-MariaDB
+-- Versión de PHP: 7.3.0
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -18,57 +19,96 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `colegio`
+-- Base de datos: `php_crud`
 --
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `alumnos`
+-- Estructura de tabla para la tabla `tbl_asistencia`
 --
 
-CREATE TABLE `alumnos` (
+CREATE TABLE `tbl_asistencia` (
   `id` int(11) NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `curso` varchar(50) DEFAULT NULL,
-  `email` varchar(100) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `presente` tinyint(4) NOT NULL,
+  `ausente` tinyint(4) NOT NULL,
+  `asistencia_fecha` date NOT NULL,
+  `estudiante_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Tabla Asistencia';
 
 --
--- Volcado de datos para la tabla `alumnos`
+-- Volcado de datos para la tabla `tbl_asistencia`
 --
 
-INSERT INTO `alumnos` (`id`, `nombre`, `curso`, `email`) VALUES
-(1, 'Lucía Fernández', '3°A', 'lucia@colegio.edu.ar'),
-(2, 'Tomás Gómez', '2°B', 'tomas@colegio.edu.ar');
+INSERT INTO `tbl_asistencia` (`id`, `presente`, `ausente`, `asistencia_fecha`, `estudiante_id`) VALUES
+(4, 0, 1, '2019-12-01', 11),
+(5, 0, 1, '2019-12-01', 12);
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `asistencias`
+-- Estructura de tabla para la tabla `tbl_estudiante`
 --
 
-CREATE TABLE `asistencias` (
+CREATE TABLE `tbl_estudiante` (
   `id` int(11) NOT NULL,
-  `alumno_id` int(11) NOT NULL,
-  `fecha` date DEFAULT NULL,
-  `presente` tinyint(1) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `nombres` varchar(55) CHARACTER SET latin1 NOT NULL,
+  `rol_numero` int(11) NOT NULL,
+  `fecha_estudiante` date NOT NULL,
+  `clase` varchar(55) CHARACTER SET latin1 NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Tabla Estudiante';
 
 --
--- Volcado de datos para la tabla `asistencias`
+-- Volcado de datos para la tabla `tbl_estudiante`
 --
 
-INSERT INTO `asistencias` (`id`, `alumno_id`, `fecha`, `presente`) VALUES
-(1, 1, '2025-09-01', 1),
-(2, 1, '2025-09-02', 0);
-
--- --------------------------------------------------------
+INSERT INTO `tbl_estudiante` (`id`, `nombres`, `rol_numero`, `fecha_estudiante`, `clase`) VALUES
+(11, 'Pedro', 5, '2001-12-11', 'PHP'),
+(12, 'Juan', 6, '2019-01-27', 'PHP');
 
 --
--- Estructura de tabla para la tabla `cursos`
+-- Índices para tablas volcadas
 --
 
+--
+-- Indices de la tabla `tbl_asistencia`
+--
+ALTER TABLE `tbl_asistencia`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `student_id` (`estudiante_id`);
+
+--
+-- Indices de la tabla `tbl_estudiante`
+--
+ALTER TABLE `tbl_estudiante`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT de las tablas volcadas
+--
+
+--
+-- AUTO_INCREMENT de la tabla `tbl_asistencia`
+--
+ALTER TABLE `tbl_asistencia`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT de la tabla `tbl_estudiante`
+--
+ALTER TABLE `tbl_estudiante`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- Restricciones para tablas volcadas
+--
+
+--
+-- Filtros para la tabla `tbl_asistencia`
+--
+ALTER TABLE `tbl_asistencia`
+  ADD CONSTRAINT `tbl_asistencia_ibfk_1` FOREIGN KEY (`estudiante_id`) REFERENCES `tbl_estudiante` (`id`);
+COMMIT;
 CREATE TABLE `cursos` (
   `id` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
@@ -197,36 +237,6 @@ ALTER TABLE `materias`
 ALTER TABLE `alumnos`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
---
--- AUTO_INCREMENT de la tabla `asistencias`
---
-ALTER TABLE `asistencias`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `cursos`
---
-ALTER TABLE `cursos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `docentes`
---
-ALTER TABLE `docentes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `evaluaciones`
---
-ALTER TABLE `evaluaciones`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT de la tabla `materias`
---
-ALTER TABLE `materias`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

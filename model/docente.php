@@ -1,26 +1,25 @@
-<?php
+<?php require_once ("controller/DBController.php");
 class Docente {
-    public static function listar() {
-        $db = DB::connect();
-        $result = $db->query("SELECT * FROM docentes");
+    public  function listar() {
+        $db = new DB();
+        $conn = $db->connect();
+
+        if (!$conn) {
+            die("Error de conexión a la base de datos.");
+        }
+
+        $result = $conn->query("SELECT * FROM docentes");
 
         if (!$result) {
-            die("Error en la consulta SQL: " . $db->error);
+            die("Error en la consulta SQL: " . $conn->error);
         }
 
         $docentes = [];
-        while($row = $result->fetch_assoc()) {
+        while ($row = $result->fetch_assoc()) {
             $docentes[] = $row;
         }
-        return $docentes;
-    }
 
-    public static function buscarPorId($id) {
-        $db = DB::connect();
-        $stmt = $db->prepare("SELECT * FROM docentes WHERE id = ?");
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        return $stmt->get_result()->fetch_assoc();
+        return $docentes;
     }
 }
 ?>
