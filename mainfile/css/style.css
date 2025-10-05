@@ -9,16 +9,16 @@ body {
 }
 
 #toys-grid .txt-heading {
-    background-color: #D3F5B8;
+    background-color: #2d5e04;
 }
 
 #toys-grid table {
     width: 100%;
-    background-color: #F0F0F0;
+    background-color: #e13c3c;
 }
 
 #toys-grid table td {
-    background-color: #FFFFFF;
+    background-color: #857272;
 }
 
 .demoInputBox {

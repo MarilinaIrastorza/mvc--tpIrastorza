@@ -1,4 +1,4 @@
-<?php
+<?php require_once "mainfile/header.php"; ?>
 
 <form name="frmAdd" method="post" action="" id="frmAdd"
     onSubmit="return validate();">
@@ -59,4 +59,3 @@ function validate() {
 </script>
 </body>
 </html>
-?>

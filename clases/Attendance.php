@@ -1,4 +1,5 @@
-<?php require_once ("controller/DBController.php");
+<?php
+require_once ("clases/DBController.php");
 class Attendance {
     private $db_handle;
     

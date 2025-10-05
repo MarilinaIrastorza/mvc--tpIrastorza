@@ -1,161 +1,228 @@
 <?php
-require_once 'config/config.php';
-require_once 'model/db.php';
-require_once 'controller/DBController.php';
-require_once 'model/Student.php';
-require_once 'model/Attendance.php';
-require_once 'model/alumno.php';
+session_start();
 
+$modulo = $_GET['modulo'] ?? '';
+$action = $_GET['action'] ?? '';
 
-// Lógica del controlador dinámico
-if (!isset($_GET["controller"])) $_GET["controller"] = constant("DEFAULT_CONTROLLER");
-if (!isset($_GET["action"])) $_GET["action"] = constant("DEFAULT_ACTION");
+switch ($modulo) {
+    case 'Student':
+        require_once("clases/Student.php");
+        $student = new Student();
 
-$controller_path = 'controller/' . $_GET["controller"] . 'Controller.php';
-
-if (!file_exists($controller_path)) {
-    die("Error: El controlador '" . $_GET["controller"] . "' no fue encontrado.");
-}
-
-require_once $controller_path;
-$controllerName = $_GET["controller"] . 'Controller';
-
-if (!class_exists($controllerName)) {
-    die("Error: La clase del controlador '" . $controllerName . "' no está definida.");
-}
-
-$controller = new $controllerName();
-$dataToView["data"] = array();
-$action = $_GET["action"];
-
-if (method_exists($controller, $action)) {
-    $dataToView["data"] = $controller->$action();
-} else {
-    die("Error: La acción '" . $action . "' no está definida en el controlador '" . $controllerName . "'.");
-}
-
-
-
-// Cargar vistas (ahora que $controller está definido)
-require_once 'view/template/header.php';
-if (!empty($controller->view) && file_exists('view/' . $controller->view . '.php')) {
-    require_once 'view/' . $controller->view . '.php';
-} else {
-    echo "<p>Vista no encontrada: " . htmlspecialchars($controller->view) . "</p>";
-}
-
-$data = $dataToView["data"];
-
-// Acciones específicas (legacy switch)
-$db_handle = new DBController();
-
-if (!empty($_GET["action"])) {
-    $action = $_GET["action"];
-} else {
-    $action = "peru";
-}
-
-switch ($action) {
-    case "attendance-add":
         if (isset($_POST['add'])) {
-            $attendance = new Attendance();
-            $attendance_date = date("Y-m-d", strtotime($_POST["attendance_date"]));
+            $name = $_POST['name'];
+            $roll_number = $_POST['roll_number'];
+            $dob = $_POST['dob'] ? date("Y-m-d", strtotime($_POST['dob'])) : "";
+            $class = $_POST['class'];
 
+            $insertId = $student->addStudent($name, $roll_number, $dob, $class);
+            if ($insertId) {
+                header("Location: index.php?modulo=Student&action=listado");
+                exit;
+            } else {
+                echo "<p>Error al agregar alumno.</p>";
+            }
+        }
+
+        switch ($action) {
+            case 'listado':
+                $alumnos = $student->getAllStudent();
+                echo "<h2>Listado de Alumnos</h2>";
+                echo "<table border='1' cellpadding='5'>
+                        <tr><th>ID</th><th>Nombre</th><th>Rol</th><th>Fecha</th><th>Clase</th></tr>";
+                foreach ($alumnos as $alumno) {
+                    echo "<tr>
+                            <td>{$alumno['id']}</td>
+                            <td>{$alumno['nombres']}</td>
+                            <td>{$alumno['rol_numero']}</td>
+                            <td>{$alumno['fecha_estudiante']}</td>
+                            <td>{$alumno['clase']}</td>
+                          </tr>";
+                }
+                echo "</table>";
+                break;
+
+            case 'add':
+                echo "<h2>Agregar Alumno</h2>";
+                echo "<form method='post' action='index.php?modulo=Student&action=add'>
+                        <label>Nombre:</label><br>
+                        <input type='text' name='name' required><br><br>
+
+                        <label>Rol:</label><br>
+                        <input type='number' name='roll_number' required><br><br>
+
+                        <label>Fecha de nacimiento:</label><br>
+                        <input type='date' name='dob'><br><br>
+
+                        <label>Clase:</label><br>
+                        <input type='text' name='class'><br><br>
+
+                        <input type='submit' name='add' value='Agregar Alumno'>
+                      </form>";
+                break;
+
+            case 'edit':
+                require_once "mainfile/student-edit.php";
+                break;
+
+            case 'delete':
+                require_once "mainfile/student-delete.php";
+                break;
+
+            default:
+                require_once "mainfile/student.php";
+                break;
+        }
+        break;
+
+    case 'Docente':
+        require_once("clases/Docente.php");
+        $docente = new Docente();
+
+        if ($action === 'listado') {
+            $docentes = $docente->getAllDocente();
+            echo "<h2>Listado de Docentes</h2>";
+            echo "<table border='1' cellpadding='5'>
+                    <tr><th>ID</th><th>Nombre</th><th>Especialidad</th><th>Email</th></tr>";
+            foreach ($docentes as $d) {
+                echo "<tr>
+                        <td>{$d['id']}</td>
+                        <td>{$d['nombre']}</td>
+                        <td>{$d['especialidad']}</td>
+                        <td>{$d['email']}</td>
+                      </tr>";
+            }
+            echo "</table>";
+        }
+        break;
+
+    case 'Curso':
+        require_once("clases/Cursos.php");
+        $curso = new Curso();
+
+        if ($action === 'listado') {
+            $cursos = $curso->getAllCurso();
+            echo "<h2>Listado de Cursos</h2>";
+            echo "<table border='1' cellpadding='5'>
+                    <tr><th>ID</th><th>Nombre</th><th>Nivel</th><th>Turno</th></tr>";
+            foreach ($cursos as $d) {
+                echo "<tr>
+                        <td>{$d['id']}</td>
+                        <td>{$d['nombre']}</td>
+                        <td>{$d['nivel']}</td>
+                        <td>{$d['turno']}</td>
+                      </tr>";
+            }
+            echo "</table>";
+        }
+        break;
+
+    case 'Attendance':
+        require_once("clases/Attendance.php");
+        require_once("clases/Student.php");
+        $attendance = new Attendance();
+
+        if (isset($_POST['add'])) {
+            $attendance_date = date("Y-m-d", strtotime($_POST["attendance_date"]));
             if (!empty($_POST["student_id"])) {
                 $attendance->deleteAttendanceByDate($attendance_date);
                 foreach ($_POST["student_id"] as $student_id) {
-                    $present = ($_POST["attendance-$student_id"] == "present") ? 1 : 0;
-                    $absent = ($_POST["attendance-$student_id"] == "absent") ? 1 : 0;
+                    $present = ($_POST["attendance-$student_id"] === "present") ? 1 : 0;
+                    $absent = ($_POST["attendance-$student_id"] === "absent") ? 1 : 0;
                     $attendance->addAttendance($attendance_date, $student_id, $present, $absent);
                 }
             }
-            header("Location: index.php?action=attendance");
+            header("Location: index.php?modulo=Attendance&action=view");
+            exit;
         }
-        $student = new Student();
-        $studentResult = $student->getAllStudent();
-        require_once "mainfile/attendance-add.php";
-        break;
 
-    case "attendance-edit":
-        $attendance_date = $_GET["date"];
-        $attendance = new Attendance();
-        if (isset($_POST['add'])) {
-            $attendance->deleteAttendanceByDate($attendance_date);
-            if (!empty($_POST["student_id"])) {
-                foreach ($_POST["student_id"] as $student_id) {
-                    $present = ($_POST["attendance-$student_id"] == "present") ? 1 : 0;
-                    $absent = ($_POST["attendance-$student_id"] == "absent") ? 1 : 0;
-                    $attendance->addAttendance($attendance_date, $student_id, $present, $absent);
+        switch ($action) {
+            case 'add':
+                $student = new Student();
+                $studentResult = $student->getAllStudent();
+                echo "<h2>Tomar Asistencia</h2>";
+                echo "<form method='post' action='index.php?modulo=Attendance&action=add'>
+                        <label>Fecha:</label><br>
+                        <input type='date' name='attendance_date' required><br><br>
+                        <table border='1' cellpadding='5'>
+                            <tr><th>Alumno</th><th>Presente</th><th>Ausente</th></tr>";
+                foreach ($studentResult as $alumno) {
+                    echo "<tr>
+                            <td>{$alumno['nombres']}
+                                <input type='hidden' name='student_id[]' value='{$alumno['id']}'>
+                            </td>
+                            <td><input type='radio' name='attendance-{$alumno['id']}' value='present' required></td>
+                            <td><input type='radio' name='attendance-{$alumno['id']}' value='absent'></td>
+                          </tr>";
                 }
-            }
-            header("Location: index.php?action=attendance");
+                echo "</table><br>
+                      <input type='submit' name='add' value='Guardar Asistencia'>
+                      </form>";
+                break;
+
+            case 'edit':
+                $attendance_date = $_GET["date"];
+                $result = $attendance->getAttendanceByDate($attendance_date);
+                $student = new Student();
+                $studentResult = $student->getAllStudent();
+                require_once "mainfile/attendance-edit.php";
+                break;
+
+            case 'delete':
+                $attendance_date = $_GET["date"];
+                $attendance->deleteAttendanceByDate($attendance_date);
+                $result = $attendance->getAttendance();
+                require_once "mainfile/attendance.php";
+                break;
+
+            case 'view':
+            default:
+                $result = $attendance->getAttendance();
+                require_once "mainfile/attendance.php";
+                break;
         }
-        $result = $attendance->getAttendanceByDate($attendance_date);
-        $student = new Student();
-        $studentResult = $student->getAllStudent();
-        require_once "mainfile/attendance-edit.php";
-        break;
-
-    case "attendance-delete":
-        $attendance_date = $_GET["date"];
-        $attendance = new Attendance();
-        $attendance->deleteAttendanceByDate($attendance_date);
-        $result = $attendance->getAttendance();
-        require_once "mainfile/attendance.php";
-        break;
-
-    case "attendance":
-        $attendance = new Attendance();
-        $result = $attendance->getAttendance();
-        require_once "mainfile/attendance.php";
-        break;
-
-    case "student-add":
-        if (isset($_POST['add'])) {
-            $name = $_POST['name'];
-            $roll_number = $_POST['roll_number'];
-            $dob = (!empty($_POST["dob"])) ? date("Y-m-d", strtotime($_POST["dob"])) : "";
-            $class = $_POST['class'];
-
-            $student = new Student();
-            $insertId = $student->addStudent($name, $roll_number, $dob, $class);
-            if (empty($insertId)) {
-                $response = array("message" => "Problema al agregar un nuevo registro", "type" => "error");
-            } else {
-                header("Location: index.php");
-            }
-        }
-        require_once "mainfile/student-add.php";
-        break;
-
-    case "student-edit":
-        $student_id = $_GET["id"];
-        $student = new Student();
-        if (isset($_POST['add'])) {
-            $name = $_POST['name'];
-            $roll_number = $_POST['roll_number'];
-            $dob = (!empty($_POST["dob"])) ? date("Y-m-d", strtotime($_POST["dob"])) : "";
-            $class = $_POST['class'];
-            $student->editStudent($name, $roll_number, $dob, $class, $student_id);
-            header("Location: index.php");
-        }
-        $result = $student->getStudentById($student_id);
-        require_once "mainfile/student-edit.php";
-        break;
-
-    case "student-delete":
-        $student_id = $_GET["id"];
-        $student = new Student();
-        $student->deleteStudent($student_id);
-        $result = $student->getAllStudent();
-        require_once "mainfile/student.php";
         break;
 
     default:
-        $student = new Student();
-        $result = $student->getAllStudent();
-        require_once "mainfile/student.php";
+        echo "<!DOCTYPE html>
+        <html lang='es'>
+        <head>
+            <meta charset='UTF-8'>
+            <title>Gestión Escolar</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+                header { background-color: #2c3e50; color: white; padding: 10px 20px; }
+                nav { margin-top: 10px; }
+                nav a {
+                    color: #f1c40f;
+                    margin-right: 15px;
+                    text-decoration: none;
+                    font-weight: bold;
+                }
+                nav a:hover {
+                    color: #ecf0f1;
+                }
+                .container { padding: 20px; }
+            </style>
+        </head>
+        <body>
+            <header>
+                <h1>Panel de Gestión Escolar</h1>
+                <nav>
+                    <a href='index.php?modulo=Student&action=listado'>Alumnos</a>
+                    <a href='index.php?modulo=Student&action=add'>Agregar Alumno</a>
+                     <a href='index.php?modulo=Attendance&action=add'>Tomar Asistencia</a>
+                    <a href='index.php?modulo=Docente&action=listado'>Docentes</a>
+                    <a href='index.php?modulo=Curso&action=listado'>Cursos</a>
+                  
+                </nav>
+            </header>
+            <div class='container'>
+                <p>Bienvenido al sistema!</p>
+                <p>Seleccioná una opción del menú para comenzar.</p>
+            </div>
+        </body>
+        </html>";
         break;
 }
-require_once 'view/template/footer.php';
 ?>
